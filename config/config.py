@@ -23,3 +23,5 @@ with open('config/mail.json', encoding='utf-8') as mail_file:
     mail_data = json.load(mail_file)
     SMTP_LOGIN = mail_data['login']
     SMTP_PASSWORD = mail_data['password']
+
+TG_TOKEN = '7964246680:AAFkp0d6N_hRSBS2ZGaGhGNOspUOmLKbgB0'
