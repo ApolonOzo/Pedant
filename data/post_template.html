@@ -1,0 +1,46 @@
+<html lang="en">
+  <head>
+      <meta charset="utf-8">
+  </head>
+  <body>
+    <h1>НОВАЯ ЗАЯВКА:</h1>
+    <table>
+        <tr>
+            <th>Дата создания:</th>
+            <td>{{ creation_data }}</td>
+        </tr>
+        <tr>
+            <th>ФИО:</th>
+            <td>{{ name }}</td>
+        </tr>
+        <tr>
+            <th>Город:</th>
+            <td>{{ city }}</td>
+        </tr>
+        <tr>
+            <th>Почта:</th>
+            <td>
+                <a href="mailto:{{ email }}">{{ email }}</a>
+            </td>
+        </tr>
+        <tr>
+            <th>Телефон:</th>
+            <td>
+                <a href="tel:{{ phone }}">{{ phone }}</a>
+            </td>
+        </tr>
+        <tr>
+            <th>Опыт в ремонте:</th>
+            <td>{{ skill_repair }}</td>
+        </tr>
+        <tr>
+            <th>Опыт с клиентами:</th>
+            <td>{{ skill_clients }}</td>
+        </tr>
+        <tr>
+            <th>Ожидаемая зарплата:</th>
+            <td>{{ salary }}</td>
+        </tr>
+    </table>
+  </body>
+</html>

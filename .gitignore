@@ -1,0 +1,6 @@
+.venv/
+config/credentials.json
+config/config.json
+config/mail.json
+.idea/
+__pycache__/
