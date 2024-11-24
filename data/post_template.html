@@ -1,46 +1,45 @@
 <html lang="en">
-  <head>
-      <meta charset="utf-8">
-  </head>
-  <body>
-    <h1>НОВАЯ ЗАЯВКА:</h1>
-    <table>
-        <tr>
-            <th>Дата создания:</th>
-            <td>{{ creation_data }}</td>
-        </tr>
-        <tr>
-            <th>ФИО:</th>
-            <td>{{ name }}</td>
-        </tr>
-        <tr>
-            <th>Город:</th>
-            <td>{{ city }}</td>
-        </tr>
-        <tr>
-            <th>Почта:</th>
-            <td>
-                <a href="mailto:{{ email }}">{{ email }}</a>
-            </td>
-        </tr>
-        <tr>
-            <th>Телефон:</th>
-            <td>
-                <a href="tel:{{ phone }}">{{ phone }}</a>
-            </td>
-        </tr>
-        <tr>
-            <th>Опыт в ремонте:</th>
-            <td>{{ skill_repair }}</td>
-        </tr>
-        <tr>
-            <th>Опыт с клиентами:</th>
-            <td>{{ skill_clients }}</td>
-        </tr>
-        <tr>
-            <th>Ожидаемая зарплата:</th>
-            <td>{{ salary }}</td>
-        </tr>
-    </table>
-  </body>
-</html>
+<head>
+    <meta charset="utf-8">
+</head>
+<p></p>
+<h1 style="text-align: left;"><img style="font-size: 14px; font-weight: 400;"
+                                   src="https://pedant.ru/images/logotype/desktop.svg" alt="" width="188" height="60"/>
+</h1>
+<h1 style="text-align: left;"><strong>НОВАЯ ЗАЯВКА:</strong></h1>
+<table>
+    <tbody>
+    <tr>
+        <th style="text-align: left; width: 235px;"><strong>Дата создания:</strong></th>
+        <td style="width: 221px;">{{ creation_data }}</td>
+    </tr>
+    <tr>
+        <th style="text-align: left; width: 235px;"><strong>ФИО:</strong></th>
+        <td style="width: 221px;">{{ name }}</td>
+    </tr>
+    <tr>
+        <th style="text-align: left; width: 235px;"><strong>Город:</strong></th>
+        <td style="width: 221px;">{{ city }}</td>
+    </tr>
+    <tr>
+        <th style="text-align: left; width: 235px;"><strong>Почта:</strong></th>
+        <td style="width: 221px;"><a href="mailto:{{ email }}">{{ email }}</a></td>
+    </tr>
+    <tr>
+        <th style="text-align: left; width: 235px;"><strong>Телефон:</strong></th>
+        <td style="width: 221px;"><a href="tel:{{ phone }}">{{ phone }}</a></td>
+    </tr>
+    <tr>
+        <th style="text-align: left; width: 235px;"><strong>Опыт в ремонте:</strong></th>
+        <td style="width: 221px;">{{ skill_repair }}</td>
+    </tr>
+    <tr>
+        <th style="text-align: left; width: 235px;"><strong>Опыт с клиентами:</strong></th>
+        <td style="width: 221px;">{{ skill_clients }}</td>
+    </tr>
+    <tr>
+        <th style="width: 235px; text-align: left;"><strong>Ожидаемая зарплата:</strong></th>
+        <td style="width: 221px;">{{ salary }} ₽</td>
+    </tr>
+    </tbody>
+</table>
