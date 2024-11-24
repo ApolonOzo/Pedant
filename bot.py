@@ -8,7 +8,7 @@ from telebot import types, TeleBot  # Импортируем типы и кла�
 from telebot.types import Message  # Импортируем тип сообщения для обработки
 
 from email_validator import validate_email, EmailNotValidError  # Импортируем функции для валидации email
-from utils import get_correct_city_name, get_filial_cities
+from utils import get_correct_city_name, get_filial_cities, get_nearest_city
 import config  # Импортируем файл конфигурации с токенами бота и ID таблицы Google Sheets
 from utils import get_credits  # Импортируем функцию для получения учетных данных
 from bot_utils.anketa import Anketa  # Импортируем класс анкеты
@@ -40,7 +40,7 @@ def welcome(message: Message):
     btn2 = types.KeyboardButton(BTN_RESTART)  # Кнопка "Перезапуск"
     markup.add(btn1, btn2)  # Добавляем кнопки в клавиатуру
     bot.send_message(message.chat.id,
-                     "Добро пожаловать, {0.first_name}!\nЯ - {1.first_name}, бот созданный чтобы быть подопытным кроликом.".format(
+                     "Добро пожаловать, {0.first_name}!\nЯ - {1.first_name},бот созданный чтобы помочь вам отправить анкету".format(
                          message.from_user, bot.get_me()),
                      parse_mode='html', reply_markup=markup)  # Отправляем приветственное сообщение
 
@@ -143,8 +143,12 @@ def input_city(message: Message):
             anketa.status = UserStatus.INPUT_EMAIL  # Переходим к следующему этапу
             bot.send_message(message.chat.id, "Введите email:")  # Запрашиваем email
         else:
-            text = "Наши филиалы представлены в следующих городах:\n\n• "
-            text += '\n• '.join(sorted(get_filial_cities()))
+            nearest_city = get_nearest_city(corrected_city)
+            if nearest_city:
+                text = f"Ближайший к вашему городу филиал: {nearest_city}"
+            else:
+                text = "Наши филиалы представлены в следующих городах:\n\n• "
+                text += '\n• '.join(sorted(get_filial_cities()))
             bot.send_message(message.chat.id, text)  # Запрашиваем email
     else:
         bot.send_message(message.chat.id, f"Город '{city_input}' не найден. Пожалуйста, введите корректное название.")
