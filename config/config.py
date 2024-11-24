@@ -5,6 +5,7 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets"] # ["https://www.google
 
 URL = 'https://docs.google.com/spreadsheets/d/1k-QRsmuIz6USKoRuVTb7J4gO0s0XEnnaQNOxaXAmZAg/edit?resourcekey=&gid=1115161138#gid=1115161138'
 LIST_NAME = 'Ответы на форму (1)'
+LIST_CITY_NAME = 'список почт.с городами'
 
 TOKEN_FILE = 'config/config.json'
 CREDENTIALS_FILE = 'config/credentials.json'

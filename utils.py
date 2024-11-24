@@ -1,7 +1,7 @@
 import os
 import logging
 from functools import wraps, lru_cache
-from typing import List, Optional
+from typing import List, Optional, Set
 import smtplib
 
 from geopy.geocoders import Nominatim
@@ -10,6 +10,8 @@ from geopy.exc import GeocoderTimedOut, GeocoderServiceError
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
+
+from googleapiclient.discovery import build  # Импорт для построения Google API сервиса
 
 from jinja2 import Template
 
@@ -62,7 +64,7 @@ def get_correct_city_name(user_input: str) -> str | None:
     geolocator = Nominatim(user_agent="city_checker")
     try:
         # Попытка найти введённый город
-        location = geolocator.geocode(user_input, exactly_one=True)
+        location = geolocator.geocode(user_input, exactly_one=True, language='ru')
         if location:
             return location.address.split(",")[0]  # Первое слово в адресе - название города
     except (GeocoderTimedOut, GeocoderServiceError) as e:
@@ -108,7 +110,6 @@ def post_decorator(function):
         template_text = f.read()
     template = Template(template_text)
 
-
     @wraps(function)
     def wrapper(values: dict):
         msg = template.render(**values)
@@ -120,3 +121,32 @@ def post_decorator(function):
 @post_decorator
 def get_post(values) -> str:
     pass
+
+
+@lru_cache(100)
+def get_filial_cities() -> Optional[Set[str]]:
+    '''
+    Получение списка городов филиалов из таблицы Google Sheets
+
+    :return: Список множнество с городами
+    '''
+    creds = get_credits()
+    service = build("sheets", "v4", credentials=creds)
+    sheet = service.spreadsheets()  # Создание объекта для работы с таблицей
+    result = (
+        sheet.values()
+        .get(spreadsheetId=config.SPREADSHEET_ID, range=config.LIST_CITY_NAME + "!B2:B")
+        .execute()
+    )
+    values = result.get("values", [])  # Извлечение значений из ответа API
+    if not values:
+        print("No data found.")  # Если данных нет, выводим сообщение
+        return
+    cities = set()
+    for row in values:
+        if len(row) != 1:
+            continue
+        city = row[0].strip()
+        if city and not city[-1].isdigit():
+            cities.add(city)
+    return cities

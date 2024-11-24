@@ -8,7 +8,7 @@ from telebot import types, TeleBot  # Импортируем типы и кла�
 from telebot.types import Message  # Импортируем тип сообщения для обработки
 
 from email_validator import validate_email, EmailNotValidError  # Импортируем функции для валидации email
-
+from utils import get_correct_city_name, get_filial_cities
 import config  # Импортируем файл конфигурации с токенами бота и ID таблицы Google Sheets
 from utils import get_credits  # Импортируем функцию для получения учетных данных
 from bot_utils.anketa import Anketa  # Импортируем класс анкеты
@@ -28,6 +28,7 @@ client = gspread.authorize(creds)  # Авторизация с использо�
 sheet = client.open_by_key(config.SPREADSHEET_ID).sheet1  # Открываем таблицу по ID
 bot = TeleBot(config.TG_TOKEN)  # Создаем экземпляр бота с токеном
 
+
 # Обработчик команды /start
 @bot.message_handler(commands=['start'])
 def welcome(message: Message):
@@ -43,6 +44,7 @@ def welcome(message: Message):
                          message.from_user, bot.get_me()),
                      parse_mode='html', reply_markup=markup)  # Отправляем приветственное сообщение
 
+
 # Обработчик текстовых сообщений
 @bot.message_handler(content_types=['text'])
 def loco(message: Message):
@@ -56,11 +58,13 @@ def loco(message: Message):
         # else:
         #     bot.send_message(message.chat.id, 'Я не знаю что ответить 😢')
 
+
 # Функция для генерации клавиатуры анкетирования
 def generate_anketa_markup():
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
     markup.add(types.KeyboardButton(BTN_CANCEL))  # Добавляем кнопку "Отмена"
     return markup
+
 
 # Функция для генерации клавиатуры "Да/Нет"
 def generate_yes_no_markup():
@@ -69,11 +73,13 @@ def generate_yes_no_markup():
     markup.add(types.KeyboardButton('Нет'))  # Кнопка "Нет"
     return markup
 
+
 # Обработчик нажатия кнопки "Отмена"
 @bot.message_handler(func=lambda message: message.text == BTN_CANCEL)
 def cancel_anketa(message: Message):
     bot.send_message(message.chat.id, "Анкета отменена.")  # Уведомление об отмене анкеты
     welcome(message)  # Возвращаемся к приветствию
+
 
 # Функция для обработки анкеты
 def process_anketa(message: Message):
@@ -101,11 +107,13 @@ def process_anketa(message: Message):
         case _:  # Обработка несуществующих состояний
             ...
 
+
 # Функция для начала анкеты
 def start_anketa(message: Message):
     anketa = ankets[message.from_user.id]  # Получаем анкету пользователя
     anketa.status = UserStatus.INPUT_NAME  # Переходим к вводу имени
     bot.send_message(message.chat.id, "Введите ФИО:")  # Запрашиваем ФИО
+
 
 # Функция для ввода имени
 def input_name(message: Message):
@@ -117,15 +125,30 @@ def input_name(message: Message):
     anketa.status = UserStatus.INPUT_CITY  # Переходим к следующему этапу
     bot.send_message(message.chat.id, "Введите город:")  # Запрашиваем город
 
+
 # Функция для ввода города
 def input_city(message: Message):
     anketa = ankets[message.from_user.id]  # Получаем анкету пользователя
-    anketa.city = message.text.strip()  # Сохраняем город
-    if not anketa.city:  # Проверка на пустое значение
+    city_input = message.text.strip()  # Сохраняем введенный город
+    if not city_input:  # Проверка на пустое значение
         bot.send_message(message.chat.id, "Введите город!")  # Запрашиваем город заново
         return
-    anketa.status = UserStatus.INPUT_EMAIL  # Переходим к следующему этапу
-    bot.send_message(message.chat.id, "Введите email:")  # Запрашиваем email
+
+    corrected_city = get_correct_city_name(city_input)
+
+    if corrected_city:
+        anketa.city = corrected_city
+        filial_cities = get_filial_cities()
+        if corrected_city in get_filial_cities() or filial_cities is None:
+            anketa.status = UserStatus.INPUT_EMAIL  # Переходим к следующему этапу
+            bot.send_message(message.chat.id, "Введите email:")  # Запрашиваем email
+        else:
+            text = "Наши филиалы представлены в следующих городах:\n\n• "
+            text += '\n• '.join(sorted(get_filial_cities()))
+            bot.send_message(message.chat.id, text)  # Запрашиваем email
+    else:
+        bot.send_message(message.chat.id, f"Город '{city_input}' не найден. Пожалуйста, введите корректное название.")
+
 
 # Функция для ввода email
 def input_email(message: Message):
@@ -142,6 +165,7 @@ def input_email(message: Message):
     anketa.status = UserStatus.INPUT_PHONE  # Переходим к следующему этапу
     bot.send_message(message.chat.id, "Введите номер телефона:")  # Запрашиваем номер телефона
 
+
 # Функция для ввода номера телефона
 def input_phone(message: Message):
     anketa = ankets[message.from_user.id]  # Получаем анкету пользователя
@@ -157,27 +181,34 @@ def input_phone(message: Message):
         bot.send_message(message.chat.id, "Некорректный номер телефона!")  # Уведомление об ошибке
         return
     anketa.status = UserStatus.INPUT_REPAIR_SKILLS  # Переходим к следующему этапу
-    bot.send_message(message.chat.id, "Умеете ремонтировать технику? Да/Нет", reply_markup=generate_yes_no_markup())  # Запрос навыков ремонта
+    bot.send_message(message.chat.id, "Умеете ремонтировать технику? Да/Нет",
+                     reply_markup=generate_yes_no_markup())  # Запрос навыков ремонта
+
 
 # Функция для ввода навыков ремонта
 def input_repair_skill(message: Message):
     anketa = ankets[message.from_user.id]  # Получаем анкету пользователя
     anketa.repair_skill = message.text.strip()  # Сохраняем ответ о навыках ремонта
     if anketa.repair_skill not in ('Да', 'Нет'):  # Проверка ответа на допустимые значения
-        bot.send_message(message.chat.id, "Умеете ремонтировать технику? Да/Нет", reply_markup=generate_yes_no_markup())  # Запрашиваем ответ повторно
+        bot.send_message(message.chat.id, "Умеете ремонтировать технику? Да/Нет",
+                         reply_markup=generate_yes_no_markup())  # Запрашиваем ответ повторно
         return
     anketa.status = UserStatus.INPUT_CLIENT_SKILLS  # Переходим к следующему этапу
-    bot.send_message(message.chat.id, "Умеете общаться с клиентами? Да/Нет", reply_markup=generate_yes_no_markup())  # Запрашиваем клиентские навыки
+    bot.send_message(message.chat.id, "Умеете общаться с клиентами? Да/Нет",
+                     reply_markup=generate_yes_no_markup())  # Запрашиваем клиентские навыки
+
 
 # Функция для ввода клиентских навыков
 def input_client_skill(message: Message):
     anketa = ankets[message.from_user.id]  # Получаем анкету пользователя
     anketa.clients_skill = message.text.strip()  # Сохраняем ответ о навыках общения
     if anketa.clients_skill not in ('Да', 'Нет'):  # Проверка ответа на допустимые значения
-        bot.send_message(message.chat.id, "Умеете общаться с клиентами? Да/Нет", reply_markup=generate_yes_no_markup())  # Запрашиваем ответ повторно
+        bot.send_message(message.chat.id, "Умеете общаться с клиентами? Да/Нет",
+                         reply_markup=generate_yes_no_markup())  # Запрашиваем ответ повторно
         return
     anketa.status = UserStatus.INPUT_SALARY  # Переходим к следующему этапу
     bot.send_message(message.chat.id, "Введите ожидаемую зарплату:")  # Запрашиваем зарплату
+
 
 # Функция для ввода зарплаты
 def input_salary(message: Message):
@@ -189,6 +220,7 @@ def input_salary(message: Message):
     anketa.status = UserStatus.FINISHED  # Завершаем анкету
     bot.send_message(message.chat.id, "Анкета успешно заполнена!")  # Уведомление об успешном завершении
     anketa.send(sheet, message.from_user.username)  # Отправляем анкету в Google Sheets
+
 
 # Запускаем бота на постоянное прослушивание сообщений
 bot.polling(none_stop=True)
