@@ -94,7 +94,7 @@ X-Peer: ::1
 
     @wraps(function)
     def wrapper(email: str, text: str):
-        text = (header + text).format(email, config.SMTP_LOGIN).encode('utf-8')
+        text = (header.format(email, config.SMTP_LOGIN) + text).encode('utf-8')
         return function(email, text, smtpObj)
 
     return wrapper
